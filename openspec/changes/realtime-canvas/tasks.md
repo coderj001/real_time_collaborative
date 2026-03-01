@@ -28,13 +28,13 @@
 ## Phase 3 — Frontend Canvas + yjs Binding
 > Goal: Single user can draw and text on canvas; state persists in yjs Y.Doc.
 
-- [ ] 3.1 Install and configure yjs + y-websocket provider + fabric.js
-- [ ] 3.2 Create useYjs hook: initialize Y.Doc, connect WebSocket provider to backend
-- [ ] 3.3 Create Canvas component: initialize fabric.Canvas, wire draw mode (PencilBrush)
-- [ ] 3.4 Implement yjs ↔ fabric binding: object:added/modified → Y.Map, Y.Map observe → canvas
-- [ ] 3.5 Add isRemoteUpdate guard to prevent echo loops
-- [ ] 3.6 Create Toolbar component: toggle between Draw and Text modes
-- [ ] 3.7 Implement Text mode: fabric IText/Textbox, synced via Y.Map
+- [x] 3.1 Install and configure yjs + y-websocket provider + fabric.js
+- [x] 3.2 Create useYjs hook: initialize Y.Doc, connect WebSocket provider to backend
+- [x] 3.3 Create Canvas component: initialize fabric.Canvas, wire draw mode (PencilBrush)
+- [x] 3.4 Implement yjs ↔ fabric binding: object:added/modified → Y.Map, Y.Map observe → canvas
+- [x] 3.5 Add isRemoteUpdate guard to prevent echo loops
+- [x] 3.6 Create Toolbar component: toggle between Draw and Text modes
+- [x] 3.7 Implement Text mode: fabric IText/Textbox, synced via Y.Map
 
 ---
 
