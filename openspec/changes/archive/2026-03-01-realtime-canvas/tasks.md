@@ -65,8 +65,8 @@
 ## Phase 6 — Polish & Validation
 > Goal: End-to-end verified, edge cases handled, ready to demo.
 
-- [ ] 6.1 Test multi-user sync: open two browser tabs, verify real-time draw sync
-- [ ] 6.2 Test cursor presence: verify cursors appear/disappear correctly
-- [ ] 6.3 Test persistence: reload page, verify canvas state restored from MongoDB
+- [x] 6.1 Test multi-user sync: open two browser tabs, verify real-time draw sync
+- [x] 6.2 Test cursor presence: verify cursors appear/disappear correctly
+- [x] 6.3 Test persistence: reload page, verify canvas state restored from MongoDB
 - [x] 6.4 Add .env.example files for both frontend and backend
 - [x] 6.5 Write README with setup instructions (podman-compose up, env vars, usage)

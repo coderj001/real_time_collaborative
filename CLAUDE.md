@@ -1,2 +1,2 @@
-
 - In order to access OpenSpec use `npx @fission-ai/openspec@latest` 
+- After each commit or phase let user know how to verifiy changes done.

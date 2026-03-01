@@ -36,3 +36,14 @@ export const joinSession = (code: string, authHeader: string) =>
 
 export const getSession = (id: string, authHeader: string) =>
   req<Session>(`${API_BASE}/sessions/${id}`, { headers: hdrs(authHeader) })
+
+export const deleteSession = (id: string, authHeader: string) =>
+  fetch(`${API_BASE}/sessions/${id}`, { method: 'DELETE', headers: hdrs(authHeader) })
+    .then(res => { if (!res.ok) throw new Error(`${res.status}`) })
+
+export const renameSession = (id: string, name: string, authHeader: string) =>
+  req<Session>(`${API_BASE}/sessions/${id}`, {
+    method: 'PATCH',
+    headers: hdrs(authHeader),
+    body: JSON.stringify({ name }),
+  })

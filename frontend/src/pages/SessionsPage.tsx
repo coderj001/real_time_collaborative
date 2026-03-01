@@ -1,7 +1,8 @@
-import { useState, useEffect, FormEvent, CSSProperties } from 'react'
+import { useState, useEffect, FormEvent, KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { listSessions, createSession, joinSession, Session } from '../api/sessions'
+import { listSessions, createSession, joinSession, deleteSession, renameSession, Session } from '../api/sessions'
+import { panel, sectionLabel, btnPrimary, btnSecondary, btnSmall, inputField, shareCodeBox, errorText, hudBar, C, glowGreen } from '../styles/theme'
 
 export function SessionsPage() {
   const { auth, logout } = useAuth()
@@ -12,6 +13,12 @@ export function SessionsPage() {
   const [error, setError] = useState('')
   const [creating, setCreating] = useState(false)
   const [joining, setJoining] = useState(false)
+
+  // Per-card state: confirmingDelete (id), renaming (id), renameValue, cardError (id → msg)
+  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null)
+  const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState('')
+  const [cardError, setCardError] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (!auth) return
@@ -48,79 +55,185 @@ export function SessionsPage() {
     }
   }
 
+  const handleDelete = async (id: string) => {
+    if (!auth) return
+    try {
+      await deleteSession(id, auth.authHeader)
+      setSessions(prev => prev.filter(s => s.id !== id))
+      setConfirmingDelete(null)
+    } catch (err: unknown) {
+      const status = err instanceof Error ? err.message : ''
+      setCardError(prev => ({
+        ...prev,
+        [id]: status === '403' ? 'NOT YOUR SESSION' : 'DELETE FAILED',
+      }))
+      setConfirmingDelete(null)
+    }
+  }
+
+  const startRename = (s: Session, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setRenamingId(s.id)
+    setRenameValue(s.name)
+    setCardError(prev => ({ ...prev, [s.id]: '' }))
+  }
+
+  const commitRename = async (id: string) => {
+    if (!auth || !renameValue.trim()) {
+      setRenamingId(null)
+      return
+    }
+    try {
+      const updated = await renameSession(id, renameValue.trim(), auth.authHeader)
+      setSessions(prev => prev.map(s => s.id === id ? { ...s, name: updated.name } : s))
+    } catch (err: unknown) {
+      const status = err instanceof Error ? err.message : ''
+      setCardError(prev => ({
+        ...prev,
+        [id]: status === '403' ? 'NOT YOUR SESSION' : 'RENAME FAILED',
+      }))
+    } finally {
+      setRenamingId(null)
+    }
+  }
+
+  const onRenameKeyDown = (e: KeyboardEvent<HTMLInputElement>, id: string) => {
+    if (e.key === 'Enter') { e.preventDefault(); commitRename(id) }
+    if (e.key === 'Escape') { setRenamingId(null) }
+  }
+
   return (
-    <div style={{ maxWidth: '640px', margin: '0 auto', padding: '2rem', fontFamily: 'sans-serif' }}>
+    <div style={{ maxWidth: '680px', margin: '0 auto', padding: '2rem' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h2 style={{ margin: 0, fontSize: '20px' }}>My Sessions</h2>
+      <div style={{ ...hudBar, justifyContent: 'space-between', marginBottom: '28px', border: `2px solid ${C.green}` }}>
+        <h2 style={{ margin: 0, fontSize: '14px', textShadow: glowGreen }}>SESSIONS</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '13px', color: '#555' }}>Hi, {auth?.username}</span>
-          <button onClick={logout} style={smallBtnStyle}>Log out</button>
+          <span style={{ fontSize: '7px', color: C.greenDim }}>Hi, {auth?.username}</span>
+          <button onClick={logout} className="retro-btn" style={btnSmall}>LOG OUT</button>
         </div>
       </div>
 
-      {error && (
-        <p style={{ color: '#c62828', fontSize: '13px', margin: '0 0 1rem' }}>{error}</p>
-      )}
+      {error && <p style={{ ...errorText, marginBottom: '16px' }}>{error}</p>}
 
-      {/* Create new session (task 5.2) */}
-      <div style={sectionStyle}>
-        <h3 style={sectionTitleStyle}>Create a new session</h3>
+      {/* Create new session */}
+      <div style={{ ...panel, marginBottom: '24px' }}>
+        <h3 style={sectionLabel}>Create a new session</h3>
         <form onSubmit={handleCreate} style={{ display: 'flex', gap: '8px' }}>
           <input
-            placeholder="Session name…"
+            placeholder="SESSION NAME..."
             value={newName}
             onChange={e => setNewName(e.target.value)}
-            style={{ ...inputStyle, flex: 1 }}
+            style={{ ...inputField, flex: 1 }}
           />
-          <button type="submit" disabled={creating} style={primaryBtnStyle}>
-            {creating ? 'Creating…' : '+ Create'}
+          <button type="submit" disabled={creating} className="retro-btn" style={btnPrimary}>
+            {creating ? 'CREATING...' : '+ NEW GAME'}
           </button>
         </form>
       </div>
 
-      {/* Join by code (task 5.3) */}
-      <div style={sectionStyle}>
-        <h3 style={sectionTitleStyle}>Join by share code</h3>
+      {/* Join by code */}
+      <div style={{ ...panel, marginBottom: '24px' }}>
+        <h3 style={sectionLabel}>Join by share code</h3>
         <form onSubmit={handleJoin} style={{ display: 'flex', gap: '8px' }}>
           <input
-            placeholder="Enter code (e.g. ABC123)"
+            placeholder="ENTER CODE (EG. ABC123)"
             value={joinCode}
             onChange={e => setJoinCode(e.target.value.toUpperCase())}
             maxLength={6}
-            style={{ ...inputStyle, flex: 1, fontFamily: 'monospace', letterSpacing: '2px', textTransform: 'uppercase' }}
+            style={{ ...inputField, flex: 1, letterSpacing: '2px', textTransform: 'uppercase' }}
           />
-          <button type="submit" disabled={joining} style={secondaryBtnStyle}>
-            {joining ? 'Joining…' : 'Join'}
+          <button type="submit" disabled={joining} className="retro-btn" style={btnSecondary}>
+            {joining ? 'JOINING...' : 'JOIN'}
           </button>
         </form>
       </div>
 
-      {/* Session list (task 5.2) */}
-      <div style={sectionStyle}>
-        <h3 style={sectionTitleStyle}>Your sessions</h3>
+      {/* Session list */}
+      <div style={{ ...panel, marginBottom: '24px' }}>
+        <h3 style={sectionLabel}>Your sessions</h3>
         {sessions.length === 0 ? (
-          <p style={{ color: '#888', fontSize: '14px', margin: 0 }}>
-            No sessions yet. Create one above.
-          </p>
+          <p style={{ ...errorText, color: C.green }}>NO SESSIONS FOUND.</p>
         ) : (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {sessions.map(s => (
               <li
                 key={s.id}
-                onClick={() => navigate(`/canvas/${s.id}`)}
-                style={sessionCardStyle}
+                onClick={() => renamingId !== s.id && navigate(`/canvas/${s.id}`)}
+                className="session-card"
+                style={{
+                  background: C.black,
+                  border: `2px solid ${C.borderDim}`,
+                  padding: '14px 16px',
+                  cursor: renamingId === s.id ? 'default' : 'pointer',
+                }}
               >
-                <div style={{ fontWeight: 600, fontSize: '15px' }}>{s.name}</div>
-                <div style={{ fontSize: '12px', color: '#888', display: 'flex', gap: '12px', marginTop: '3px' }}>
-                  <span>
-                    Code:{' '}
-                    <code style={{ background: '#f0f0f0', padding: '1px 5px', borderRadius: '3px', letterSpacing: '1px' }}>
-                      {s.shareCode}
-                    </code>
-                  </span>
+                {/* Name row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  {renamingId === s.id ? (
+                    <input
+                      autoFocus
+                      value={renameValue}
+                      onChange={e => setRenameValue(e.target.value)}
+                      onBlur={() => commitRename(s.id)}
+                      onKeyDown={e => onRenameKeyDown(e, s.id)}
+                      onClick={e => e.stopPropagation()}
+                      style={{ ...inputField, flex: 1, fontSize: '10px', fontWeight: 700, padding: '3px 6px' }}
+                    />
+                  ) : (
+                    <span style={{ fontWeight: 700, fontSize: '10px', flex: 1 }}>{s.name}</span>
+                  )}
+
+                  {/* Rename button */}
+                  {renamingId !== s.id && (
+                    <button
+                      onClick={e => startRename(s, e)}
+                      className="retro-btn"
+                      style={{ ...btnSmall, fontSize: '7px' }}
+                    >
+                      REN
+                    </button>
+                  )}
+
+                  {/* Delete / confirm buttons */}
+                  {confirmingDelete === s.id ? (
+                    <div style={{ display: 'flex', gap: '4px' }} onClick={e => e.stopPropagation()}>
+                      <button
+                        onClick={() => handleDelete(s.id)}
+                        className="retro-btn"
+                        style={{ ...btnSmall, color: C.red, borderColor: C.red, fontSize: '7px' }}
+                      >
+                        YES
+                      </button>
+                      <button
+                        onClick={() => setConfirmingDelete(null)}
+                        className="retro-btn"
+                        style={{ ...btnSmall, fontSize: '7px' }}
+                      >
+                        NO
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={e => { e.stopPropagation(); setConfirmingDelete(s.id) }}
+                      className="retro-btn"
+                      style={{ ...btnSmall, color: C.red, borderColor: C.red, fontSize: '7px' }}
+                    >
+                      {confirmingDelete === s.id ? 'SURE?' : 'DEL'}
+                    </button>
+                  )}
+                </div>
+
+                {/* Code + date row */}
+                <div style={{ fontSize: '8px', color: C.greenDim, display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <span style={{ color: C.greenDim }}>CODE:</span>
+                  <code style={shareCodeBox}>{s.shareCode}</code>
                   {s.createdAt && <span>{new Date(s.createdAt).toLocaleDateString()}</span>}
                 </div>
+
+                {/* Per-card error */}
+                {cardError[s.id] && (
+                  <p style={{ ...errorText, marginTop: '6px' }}>{cardError[s.id]}</p>
+                )}
               </li>
             ))}
           </ul>
@@ -128,64 +241,4 @@ export function SessionsPage() {
       </div>
     </div>
   )
-}
-
-const sectionStyle: CSSProperties = {
-  marginBottom: '1.75rem',
-}
-
-const sectionTitleStyle: CSSProperties = {
-  margin: '0 0 0.75rem',
-  fontSize: '13px',
-  fontWeight: 600,
-  color: '#444',
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px',
-}
-
-const inputStyle: CSSProperties = {
-  padding: '8px 10px',
-  border: '1px solid #ccc',
-  borderRadius: '4px',
-  fontSize: '14px',
-  fontFamily: 'sans-serif',
-}
-
-const primaryBtnStyle: CSSProperties = {
-  padding: '8px 14px',
-  background: '#1a73e8',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  fontWeight: 600,
-  fontSize: '14px',
-  whiteSpace: 'nowrap',
-  fontFamily: 'sans-serif',
-}
-
-const secondaryBtnStyle: CSSProperties = {
-  ...primaryBtnStyle,
-  background: '#fff',
-  color: '#1a73e8',
-  border: '1px solid #1a73e8',
-}
-
-const smallBtnStyle: CSSProperties = {
-  padding: '5px 10px',
-  background: 'transparent',
-  color: '#555',
-  border: '1px solid #ccc',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  fontSize: '12px',
-  fontFamily: 'sans-serif',
-}
-
-const sessionCardStyle: CSSProperties = {
-  padding: '12px 14px',
-  border: '1px solid #e0e0e0',
-  borderRadius: '6px',
-  cursor: 'pointer',
-  background: '#fff',
 }

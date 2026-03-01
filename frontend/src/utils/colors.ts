@@ -1,6 +1,6 @@
 const PALETTE = [
-  '#e53935', '#8e24aa', '#1e88e5', '#00897b',
-  '#f4511e', '#039be5', '#33b679', '#7986cb',
+  '#ff3131', '#ffb000', '#00ffff', '#ff00ff',
+  '#ff6600', '#00ff41', '#ff9500', '#ff69b4',
 ]
 
 export function userColor(username: string): string {

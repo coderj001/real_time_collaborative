@@ -1,26 +1,33 @@
+import { btnPrimary, btnSecondary, hudBar } from '../styles/theme'
+
 interface ToolbarProps {
   mode: 'draw' | 'text'
   onModeChange: (mode: 'draw' | 'text') => void
 }
 
 export function Toolbar({ mode, onModeChange }: ToolbarProps) {
-  const btn = (label: string, value: 'draw' | 'text') => ({
-    onClick: () => onModeChange(value),
-    style: {
-      padding: '6px 14px',
-      cursor: 'pointer',
-      border: '1px solid #ccc',
-      borderRadius: '4px',
-      background: mode === value ? '#1a73e8' : '#fff',
-      color: mode === value ? '#fff' : '#333',
-      fontWeight: mode === value ? 600 : 400,
-    },
-  })
-
   return (
-    <div style={{ display: 'flex', gap: '8px', padding: '8px 12px', borderBottom: '1px solid #ddd', background: '#fafafa' }}>
-      <button {...btn('✏️ Draw', 'draw')}>✏️ Draw</button>
-      <button {...btn('T Text', 'text')}>T Text</button>
+    <div style={{ ...hudBar, gap: '8px', borderBottom: 'none' }}>
+      <button
+        onClick={() => onModeChange('draw')}
+        className="retro-btn"
+        style={{
+          ...(mode === 'draw' ? btnPrimary : btnSecondary),
+          fontSize: '8px',
+        }}
+      >
+        DRAW
+      </button>
+      <button
+        onClick={() => onModeChange('text')}
+        className="retro-btn"
+        style={{
+          ...(mode === 'text' ? btnPrimary : btnSecondary),
+          fontSize: '8px',
+        }}
+      >
+        TEXT
+      </button>
     </div>
   )
 }

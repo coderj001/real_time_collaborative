@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid'
 import { randomUUID } from 'crypto'
 import { Session } from '../models/Session'
 import { basicAuth } from '../middleware/basicAuth'
+import { activeSessions } from '../state'
 
 const router = Router()
 
@@ -74,6 +75,60 @@ router.get('/', async (req, res) => {
       createdAt: s.createdAt,
     }))
   )
+})
+
+// PATCH /sessions/:id — rename a session (owner only)
+router.patch('/:id', async (req, res) => {
+  const { name } = req.body
+  if (!name || !name.trim()) {
+    res.status(400).json({ error: 'name is required' })
+    return
+  }
+  const session = await Session.findById(req.params.id)
+  if (!session) {
+    res.status(404).json({ error: 'Session not found' })
+    return
+  }
+  if (session.createdBy !== res.locals.username) {
+    res.status(403).json({ error: 'Forbidden' })
+    return
+  }
+  const updated = await Session.findByIdAndUpdate(
+    req.params.id,
+    { name: name.trim() },
+    { new: true }
+  )
+  res.json({
+    id: updated!._id,
+    name: updated!.name,
+    shareCode: updated!.shareCode,
+    createdAt: updated!.createdAt,
+  })
+})
+
+// DELETE /sessions/:id — delete a session (owner only)
+router.delete('/:id', async (req, res) => {
+  const session = await Session.findById(req.params.id)
+  if (!session) {
+    res.status(404).json({ error: 'Session not found' })
+    return
+  }
+  if (session.createdBy !== res.locals.username) {
+    res.status(403).json({ error: 'Forbidden' })
+    return
+  }
+  await Session.findByIdAndDelete(req.params.id)
+
+  // Evict from in-memory map and close active WebSocket peers
+  const entry = activeSessions.get(req.params.id)
+  if (entry) {
+    for (const ws of entry.peers) {
+      ws.close(1001, 'Session deleted')
+    }
+    activeSessions.delete(req.params.id)
+  }
+
+  res.status(204).send()
 })
 
 export default router

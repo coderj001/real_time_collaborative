@@ -1,4 +1,5 @@
 import { RemoteUser } from '../hooks/useAwareness'
+import { cursorLabel, C } from '../styles/theme'
 
 interface CursorLayerProps {
   remoteStates: Map<number, RemoteUser>
@@ -32,29 +33,20 @@ export function CursorLayer({ remoteStates }: CursorLayerProps) {
               transform: 'translate(0, 0)',
             }}
           >
-            {/* Task 4.4: SVG cursor arrow */}
             <svg width="14" height="18" viewBox="0 0 14 18" style={{ flexShrink: 0 }}>
               <path
                 d="M0 0 L0 14 L4 10 L7 17 L9 16 L6 9 L11 9 Z"
                 fill={color}
-                stroke="white"
-                strokeWidth="1.2"
-                strokeLinejoin="round"
+                stroke={C.black}
+                strokeWidth="2"
+                strokeLinejoin="miter"
               />
             </svg>
-            {/* Task 4.5: name label */}
             <span
               style={{
+                ...cursorLabel,
                 background: color,
-                color: '#fff',
-                fontSize: '11px',
-                fontFamily: 'sans-serif',
-                fontWeight: 600,
-                padding: '1px 5px',
-                borderRadius: '3px',
-                whiteSpace: 'nowrap',
-                marginTop: '1px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                color: C.black,
               }}
             >
               {name}

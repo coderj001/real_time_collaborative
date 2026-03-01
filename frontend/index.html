@@ -3,10 +3,100 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Collaborative Canvas</title>
+    <title>COLLABORATIVE CANVAS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
     <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+      :root {
+        --crt-black:      #0a0a0a;
+        --crt-dark:       #001a00;
+        --crt-green:      #00ff41;
+        --crt-green-dim:  #00cc33;
+        --crt-border-dim: #005510;
+        --crt-amber:      #ffb000;
+        --crt-cyan:       #00ffff;
+        --crt-red:        #ff3131;
+        --crt-white:      #e8ffe8;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Press Start 2P', monospace;
+      }
+
+      body {
+        background: var(--crt-black);
+        color: var(--crt-green);
+        overflow: hidden;
+      }
+
+      input, button {
+        font-family: 'Press Start 2P', monospace;
+      }
+
+      /* Scanline overlay */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+          to bottom,
+          transparent 0px,
+          transparent 2px,
+          rgba(0, 0, 0, 0.15) 2px,
+          rgba(0, 0, 0, 0.15) 4px
+        );
+        pointer-events: none;
+        z-index: 9999;
+        animation: scanline-scroll 8s linear infinite;
+      }
+
+      /* CRT flicker on root */
+      #root {
+        animation: crt-flicker 8s steps(1) infinite;
+      }
+
+      /* Button press-in effect */
+      .retro-btn:active {
+        transform: translateY(2px);
+        border-bottom-width: 2px !important;
+        border-right-width: 2px !important;
+      }
+
+      /* Session card hover glow */
+      .session-card:hover {
+        border-color: var(--crt-green) !important;
+        box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+      }
+
+      @keyframes blink {
+        50% { opacity: 0; }
+      }
+
+      @keyframes scanline-scroll {
+        0%   { background-position: 0 0; }
+        100% { background-position: 0 100%; }
+      }
+
+      @keyframes crt-flicker {
+        0%   { opacity: 1; }
+        92%  { opacity: 1; }
+        93%  { opacity: 0.97; }
+        94%  { opacity: 1; }
+        96%  { opacity: 0.98; }
+        100% { opacity: 1; }
+      }
+
+      @keyframes press-start-slide {
+        0%   { opacity: 0; transform: translateY(-8px); }
+        25%  { opacity: 0; transform: translateY(-6px); }
+        50%  { opacity: 1; transform: translateY(-3px); }
+        75%  { opacity: 1; transform: translateY(-1px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
     </style>
   </head>
   <body>

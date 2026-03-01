@@ -10,6 +10,7 @@ import { connectMongo } from './persistence/mongodb'
 import { redis, addUserToSession, removeUserFromSession } from './persistence/redis'
 import { Session } from './models/Session'
 import sessionRoutes from './routes/sessions'
+import { activeSessions } from './state'
 
 const app = express()
 const server = http.createServer(app)
@@ -59,7 +60,7 @@ setPersistence({
 
 // --- Periodic snapshot save every 60s ---
 // Track active sessions + their docs for periodic saving
-const activeSessions = new Map<string, { peers: Set<WebSocket>; ydoc: Y.Doc | null }>()
+// activeSessions imported from ./state (shared with routes to avoid circular dep)
 
 setInterval(async () => {
   for (const [sessionId, { peers, ydoc }] of activeSessions.entries()) {

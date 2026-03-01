@@ -1,4 +1,4 @@
-import { useState, useEffect, CSSProperties } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Canvas } from '../components/Canvas'
 import { CursorLayer } from '../components/CursorLayer'
@@ -8,6 +8,7 @@ import { useAwareness, RemoteUser } from '../hooks/useAwareness'
 import { useAuth } from '../context/AuthContext'
 import { getSession } from '../api/sessions'
 import { userColor } from '../utils/colors'
+import { hudBar, btnSmall, shareCodeBox, presenceChip, C, glowGreen, ANIM_BLINK } from '../styles/theme'
 
 export function CanvasPage() {
   const { id: sessionId = '' } = useParams<{ id: string }>()
@@ -25,7 +26,6 @@ export function CanvasPage() {
   const { doc, provider, connected } = useYjs(sessionId, username)
   const { remoteStates, setLocalCursor } = useAwareness(provider, username, color)
 
-  // Task 5.4: fetch share code + session name
   useEffect(() => {
     if (!auth || !sessionId) return
     getSession(sessionId, auth.authHeader)
@@ -44,52 +44,42 @@ export function CanvasPage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: C.black }}>
       {/* Top bar: toolbar + share code + back button */}
-      <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #ddd', background: '#fafafa' }}>
+      <div style={{ ...hudBar, justifyContent: 'space-between' }}>
         <Toolbar mode={mode} onModeChange={setMode} />
         <div style={{ flex: 1 }} />
-        {/* Task 5.4: share code display */}
         {shareCode && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '0 10px' }}>
-            <span style={{ fontSize: '11px', color: '#777', fontFamily: 'sans-serif' }}>Share code:</span>
-            <code style={{
-              background: '#f0f0f0',
-              padding: '2px 8px',
-              borderRadius: '4px',
-              fontSize: '13px',
-              fontWeight: 700,
-              letterSpacing: '2px',
-            }}>
-              {shareCode}
-            </code>
-            <button onClick={copyCode} style={topBtnStyle}>
-              {codeCopied ? '✓ Copied' : 'Copy'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '7px', color: C.greenDim }}>SHARE CODE:</span>
+            <code style={shareCodeBox}>{shareCode}</code>
+            <button onClick={copyCode} className="retro-btn" style={btnSmall}>
+              {codeCopied ? 'COPIED!' : 'COPY'}
             </button>
           </div>
         )}
-        <button onClick={() => navigate('/sessions')} style={{ ...topBtnStyle, marginRight: '8px' }}>
-          ← Sessions
+        <button onClick={() => navigate('/sessions')} className="retro-btn" style={btnSmall}>
+          {'< SESSIONS'}
         </button>
       </div>
 
-      {/* Status bar: connection + session name + presence bar (task 5.5) */}
+      {/* Status bar */}
       <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '4px 10px',
-        fontSize: '12px',
-        background: '#fafafa',
-        borderBottom: '1px solid #eee',
-        gap: '8px',
-        fontFamily: 'sans-serif',
+        ...hudBar,
+        borderTop: 'none',
+        borderBottom: `1px solid ${C.borderDim}`,
+        fontSize: '8px',
+        justifyContent: 'space-between',
       }}>
-        <span style={{ color: connected ? '#2d7d32' : '#e65100' }}>
-          {connected ? '● Connected' : '○ Connecting…'}
-        </span>
-        {sessionName && <span style={{ color: '#555' }}>· {sessionName}</span>}
-        <div style={{ flex: 1 }} />
-        {/* Task 5.5: presence bar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={connected
+            ? { color: C.green, textShadow: glowGreen }
+            : { color: C.amber, animation: ANIM_BLINK }
+          }>
+            {connected ? '● ONLINE' : '○ SYNC...'}
+          </span>
+          {sessionName && <span style={{ color: C.greenDim }}>· {sessionName}</span>}
+        </div>
         <PresenceBar localUser={{ name: username, color }} remoteStates={remoteStates} />
       </div>
 
@@ -102,7 +92,6 @@ export function CanvasPage() {
   )
 }
 
-// Task 5.5: presence chips for all connected users
 function PresenceBar({
   localUser,
   remoteStates,
@@ -121,48 +110,26 @@ function PresenceBar({
         <div
           key={i}
           title={u.name}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            background: u.color,
-            color: '#fff',
-            borderRadius: '12px',
-            padding: '2px 8px 2px 3px',
-            fontSize: '11px',
-            fontWeight: 600,
-            fontFamily: 'sans-serif',
-            whiteSpace: 'nowrap',
-          }}
+          style={{ ...presenceChip, borderColor: u.color }}
         >
           <div style={{
-            width: '16px',
-            height: '16px',
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.3)',
+            width: '14px',
+            height: '14px',
+            background: u.color,
+            color: C.black,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '9px',
+            fontSize: '7px',
             fontWeight: 700,
             flexShrink: 0,
           }}>
             {u.name[0]?.toUpperCase()}
           </div>
-          {u.name}
-          {u.isLocal && <span style={{ opacity: 0.7, fontSize: '10px' }}>(you)</span>}
+          <span style={{ color: u.color }}>{u.name}</span>
+          {u.isLocal && <span style={{ color: C.greenDim, fontSize: '7px', animation: ANIM_BLINK }}>(you)</span>}
         </div>
       ))}
     </div>
   )
-}
-
-const topBtnStyle: CSSProperties = {
-  padding: '3px 8px',
-  background: '#fff',
-  border: '1px solid #ccc',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  fontSize: '11px',
-  fontFamily: 'sans-serif',
 }

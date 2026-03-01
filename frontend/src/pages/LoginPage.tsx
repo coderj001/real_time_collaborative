@@ -1,7 +1,8 @@
-import { useState, FormEvent, CSSProperties } from 'react'
+import { useState, FormEvent } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { listSessions } from '../api/sessions'
+import { panel, btnPrimary, inputField, errorText, C, glowGreen, ANIM_SLIDE_IN } from '../styles/theme'
 
 export function LoginPage() {
   const [username, setUsername] = useState('')
@@ -31,73 +32,37 @@ export function LoginPage() {
   }
 
   return (
-    <div style={pageStyle}>
-      <div style={cardStyle}>
-        <h2 style={{ margin: '0 0 0.25rem', fontFamily: 'sans-serif', fontSize: '20px' }}>
-          Collaborative Canvas
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.black }}>
+      <div style={{ ...panel, width: '340px', animation: ANIM_SLIDE_IN }}>
+        <h2 style={{ margin: '0 0 0.5rem', fontSize: '12px', textShadow: glowGreen }}>
+          COLLAB CANVAS
         </h2>
-        <p style={{ margin: '0 0 1.5rem', fontSize: '13px', color: '#777', fontFamily: 'sans-serif' }}>
-          Sign in to create or join a session
+        <p style={{ margin: '0 0 1.5rem', fontSize: '7px', color: C.greenDim }}>
+          INSERT COIN TO CONTINUE
         </p>
         <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <input
-            placeholder="Username"
+            placeholder="USERNAME"
             value={username}
             onChange={e => setUsername(e.target.value)}
             required
             autoFocus
-            style={inputStyle}
+            style={{ ...inputField, width: '100%', caretColor: C.green }}
           />
           <input
             type="password"
-            placeholder="Password"
+            placeholder="PASSWORD"
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
-            style={inputStyle}
+            style={{ ...inputField, width: '100%', caretColor: C.green }}
           />
-          {error && <p style={{ color: '#c62828', fontSize: '13px', margin: 0, fontFamily: 'sans-serif' }}>{error}</p>}
-          <button type="submit" disabled={loading} style={btnStyle}>
-            {loading ? 'Signing in…' : 'Sign in'}
+          {error && <p style={errorText}>{error}</p>}
+          <button type="submit" disabled={loading} className="retro-btn" style={{ ...btnPrimary, width: '100%', fontSize: '9px' }}>
+            {loading ? 'LOADING...' : 'PRESS START'}
           </button>
         </form>
       </div>
     </div>
   )
-}
-
-const pageStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  height: '100vh',
-  background: '#f5f5f5',
-}
-
-const cardStyle: CSSProperties = {
-  background: '#fff',
-  padding: '2rem',
-  borderRadius: '8px',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-  width: '320px',
-}
-
-const inputStyle: CSSProperties = {
-  padding: '8px 10px',
-  border: '1px solid #ccc',
-  borderRadius: '4px',
-  fontSize: '14px',
-  fontFamily: 'sans-serif',
-}
-
-const btnStyle: CSSProperties = {
-  padding: '9px',
-  background: '#1a73e8',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  fontSize: '14px',
-  fontWeight: 600,
-  fontFamily: 'sans-serif',
 }
