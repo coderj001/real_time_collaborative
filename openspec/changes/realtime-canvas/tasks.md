@@ -41,12 +41,12 @@
 ## Phase 4 — Cursor Presence
 > Goal: Multiple users see each other's cursors with name + color labels.
 
-- [ ] 4.1 Create useAwareness hook: wrap yjs Awareness, expose local state setter + remote states
-- [ ] 4.2 On canvas mousemove, update awareness cursor position
-- [ ] 4.3 Assign each user a color from a fixed palette on session join
-- [ ] 4.4 Create CursorLayer component: render remote cursors as SVG/HTML overlay
-- [ ] 4.5 Show user name label next to each remote cursor
-- [ ] 4.6 Remove cursor when user disconnects (awareness cleanup)
+- [x] 4.1 Create useAwareness hook: wrap yjs Awareness, expose local state setter + remote states
+- [x] 4.2 On canvas mousemove, update awareness cursor position
+- [x] 4.3 Assign each user a color from a fixed palette on session join
+- [x] 4.4 Create CursorLayer component: render remote cursors as SVG/HTML overlay
+- [x] 4.5 Show user name label next to each remote cursor
+- [x] 4.6 Remove cursor when user disconnects (awareness cleanup)
 
 ---
 

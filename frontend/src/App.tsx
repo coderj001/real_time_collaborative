@@ -1,19 +1,23 @@
 import { useState } from 'react'
 import { Canvas } from './components/Canvas'
+import { CursorLayer } from './components/CursorLayer'
 import { Toolbar } from './components/Toolbar'
 import { useYjs } from './hooks/useYjs'
+import { useAwareness } from './hooks/useAwareness'
+import { userColor } from './utils/colors'
 
 export default function App() {
   const [mode, setMode] = useState<'draw' | 'text'>('draw')
 
-  // Phase 3 testing: read session/user from URL query params
-  // e.g. http://localhost:3000?session=<id>&user=alice
+  // Phase 3/4 testing: read session/user from URL query params
   // Phase 5 will replace this with React Router
   const params = new URLSearchParams(window.location.search)
   const sessionId = params.get('session') ?? ''
   const username = params.get('user') ?? 'anonymous'
+  const color = userColor(username)
 
-  const { doc, connected } = useYjs(sessionId, username)
+  const { doc, provider, connected } = useYjs(sessionId, username)
+  const { remoteStates, setLocalCursor } = useAwareness(provider, username, color)
 
   if (!sessionId) {
     return (
@@ -37,7 +41,11 @@ export default function App() {
       <div style={{ padding: '2px 10px', fontSize: '12px', color: connected ? '#2d7d32' : '#e65100', background: '#fafafa', borderBottom: '1px solid #eee' }}>
         {connected ? '● Connected' : '○ Connecting…'} · session: {sessionId} · user: {username}
       </div>
-      <Canvas doc={doc} mode={mode} />
+      {/* position:relative so CursorLayer can be absolute-positioned on top */}
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+        <Canvas doc={doc} mode={mode} onCursorMove={setLocalCursor} />
+        <CursorLayer remoteStates={remoteStates} />
+      </div>
     </div>
   )
 }

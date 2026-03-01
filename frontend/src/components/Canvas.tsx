@@ -5,9 +5,10 @@ import * as Y from 'yjs'
 interface CanvasProps {
   doc: Y.Doc
   mode: 'draw' | 'text'
+  onCursorMove?: (pos: { x: number; y: number } | null) => void
 }
 
-export function Canvas({ doc, mode }: CanvasProps) {
+export function Canvas({ doc, mode, onCursorMove }: CanvasProps) {
   const canvasElRef = useRef<HTMLCanvasElement>(null)
   const fabricRef = useRef<fabric.Canvas | null>(null)
   // Guard to prevent echo: local fabric changes → Y.Map → back to fabric
@@ -161,6 +162,29 @@ export function Canvas({ doc, mode }: CanvasProps) {
       objectsMap.unobserve(onMapChange)
     }
   }, [doc])
+
+  // ── Task 4.2: broadcast cursor position via awareness ───────────────────
+  // Use a ref so the effect doesn't re-run when the callback identity changes
+  const onCursorMoveRef = useRef(onCursorMove)
+  onCursorMoveRef.current = onCursorMove
+
+  useEffect(() => {
+    const fc = fabricRef.current
+    if (!fc) return
+
+    const onMouseMove = (e: any) => {
+      const pointer = fc.getPointer(e.e as MouseEvent)
+      onCursorMoveRef.current?.({ x: pointer.x, y: pointer.y })
+    }
+    const onMouseOut = () => onCursorMoveRef.current?.(null)
+
+    fc.on('mouse:move', onMouseMove)
+    fc.on('mouse:out', onMouseOut)
+    return () => {
+      fc.off('mouse:move', onMouseMove)
+      fc.off('mouse:out', onMouseOut)
+    }
+  }, [])
 
   return (
     <div style={{ flex: 1, overflow: 'hidden', border: '1px solid #e0e0e0' }}>
