@@ -115,6 +115,10 @@ export function Canvas({ doc, mode }: CanvasProps) {
 
     // Y.Map → fabric (task 3.4)
     const onMapChange = (event: Y.YMapEvent<Record<string, unknown>>) => {
+      // Skip changes that originated from this client — fabric is already up to date
+      // and re-applying them would destroy active IText editing sessions
+      if (event.transaction.local) return
+
       event.changes.keys.forEach((change, key) => {
         if (change.action === 'delete') {
           const existing = fc.getObjects().find((o: any) => o.id === key)
