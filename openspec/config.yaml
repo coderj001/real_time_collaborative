@@ -1,20 +1,35 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Tech stack:
+    - Frontend: React 18, TypeScript, Vite, react-router-dom v6, fabric.js v5, yjs, y-websocket
+    - Backend: Node.js, TypeScript, Express, y-websocket server, mongoose, ioredis
+    - Infrastructure: podman-compose, MongoDB, Redis
+    - Real-time: yjs CRDT (Y.Doc, Y.Map, Awareness), y-websocket v2 (setPersistence API)
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+  Architecture:
+    - Centralized client-server (not P2P): all yjs updates relayed through the backend y-websocket server
+    - REST API with HTTP Basic Auth on all endpoints (credentials in env vars)
+    - WebSocket at ws://backend/yjs/:sessionId — no auth (session ID is implicit token)
+    - MongoDB stores session snapshots; Redis tracks active session user counts
+    - React Router: / (login) → /sessions (list/create/join) → /canvas/:id (board)
+
+  Conventions:
+    - Monorepo: frontend/ and backend/ with separate package.json files
+    - Containers orchestrated via podman-compose.yml at root
+    - Environment variables: VITE_API_URL, VITE_WS_URL (frontend); MONGODB_URL, REDIS_URL, AUTH_USERNAME, AUTH_PASSWORD (backend)
+    - Auth context stored in localStorage under key "canvas_auth"
+    - Conventional commits (feat, fix, chore, docs)
+    - Inline styles (no CSS framework) for UI components
+
+  Key patterns:
+    - isRemoteUpdate ref guard prevents echo loops in yjs↔fabric binding
+    - event.transaction.local check skips local Y.Map changes in observer
+    - useRef for stable callbacks passed to fabric event listeners
+    - useCallback + providerRef pattern in useAwareness for setLocalCursor
+
+rules:
+  tasks:
+    - Break tasks into small, independently verifiable steps
+    - Each task should touch at most 2-3 files
+    - Include verification step at end of each phase

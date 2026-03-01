@@ -53,12 +53,12 @@
 ## Phase 5 — Session UI + Auth
 > Goal: Full user-facing flow: login → create/join session → collaborate.
 
-- [ ] 5.1 Create login screen with username/password form (sets Basic Auth header for all requests)
-- [ ] 5.2 Create SessionList component: list user's sessions, create new session button
-- [ ] 5.3 Create join-by-code UI (enter share code → redirect to canvas)
-- [ ] 5.4 Show session share code on canvas page (for inviting others)
-- [ ] 5.5 Show presence bar: avatar/name chips for all currently connected users
-- [ ] 5.6 Wire React Router: / (login) → /sessions (list) → /canvas/:id (board)
+- [x] 5.1 Create login screen with username/password form (sets Basic Auth header for all requests)
+- [x] 5.2 Create SessionList component: list user's sessions, create new session button
+- [x] 5.3 Create join-by-code UI (enter share code → redirect to canvas)
+- [x] 5.4 Show session share code on canvas page (for inviting others)
+- [x] 5.5 Show presence bar: avatar/name chips for all currently connected users
+- [x] 5.6 Wire React Router: / (login) → /sessions (list) → /canvas/:id (board)
 
 ---
 
