@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-const MONGO_URL = process.env.MONGO_URL || 'mongodb://localhost:27017/canvas'
+const MONGO_URL = process.env.MONGODB_URL || process.env.MONGO_URL || 'mongodb://localhost:27017/canvas'
 
 export async function connectMongo(): Promise<void> {
   await mongoose.connect(MONGO_URL)

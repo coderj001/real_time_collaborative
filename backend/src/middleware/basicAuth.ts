@@ -1,14 +1,23 @@
 import { Request, Response, NextFunction } from 'express'
 
-// Prototype auth: users stored as comma-separated "user:pass" pairs in env
-// e.g. AUTH_USERS=alice:secret,bob:hunter2
+// Prototype auth: supports two env var formats:
+//   AUTH_USERNAME + AUTH_PASSWORD  (compose-friendly, single user)
+//   AUTH_USERS=alice:secret,bob:hunter2  (multi-user)
 function loadUsers(): Map<string, string> {
-  const raw = process.env.AUTH_USERS || 'admin:admin'
   const map = new Map<string, string>()
-  for (const entry of raw.split(',')) {
-    const [user, pass] = entry.trim().split(':')
-    if (user && pass) map.set(user, pass)
+  const single = process.env.AUTH_USERNAME
+  const singlePass = process.env.AUTH_PASSWORD
+  if (single && singlePass) {
+    map.set(single, singlePass)
   }
+  const raw = process.env.AUTH_USERS
+  if (raw) {
+    for (const entry of raw.split(',')) {
+      const [user, pass] = entry.trim().split(':')
+      if (user && pass) map.set(user, pass)
+    }
+  }
+  if (map.size === 0) map.set('admin', 'admin')
   return map
 }
 
