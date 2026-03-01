@@ -15,13 +15,13 @@
 ## Phase 2 — Backend Core
 > Goal: Sessions REST API + y-websocket server + basic auth + Redis + MongoDB connected.
 
-- [ ] 2.1 Connect Redis client (ioredis) and MongoDB client (mongoose)
-- [ ] 2.2 Define Session mongoose model
-- [ ] 2.3 Implement basic auth middleware
-- [ ] 2.4 Implement session routes: POST /sessions, POST /sessions/join, GET /sessions/:id, GET /sessions
-- [ ] 2.5 Set up y-websocket server on ws://backend/yjs/:sessionId
-- [ ] 2.6 Implement snapshot load-on-connect (load Y.Doc from MongoDB on first peer join)
-- [ ] 2.7 Implement periodic snapshot save (every 60s) and on-empty save
+- [x] 2.1 Connect Redis client (ioredis) and MongoDB client (mongoose)
+- [x] 2.2 Define Session mongoose model
+- [x] 2.3 Implement basic auth middleware
+- [x] 2.4 Implement session routes: POST /sessions, POST /sessions/join, GET /sessions/:id, GET /sessions
+- [x] 2.5 Set up y-websocket server on ws://backend/yjs/:sessionId
+- [x] 2.6 Implement snapshot load-on-connect (load Y.Doc from MongoDB on first peer join)
+- [x] 2.7 Implement periodic snapshot save (every 60s) and on-empty save
 
 ---
 
