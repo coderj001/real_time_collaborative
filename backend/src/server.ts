@@ -44,10 +44,15 @@ setPersistence({
   writeState: async (docName: string, ydoc: Y.Doc) => {
     const objectsMap = ydoc.getMap<unknown>('objects')
     const objects = Array.from(objectsMap.values())
-    await Session.findByIdAndUpdate(docName, {
-      snapshot: { objects },
-      lastSavedAt: new Date(),
-    })
+    const result = await Session.findByIdAndUpdate(
+      docName,
+      { snapshot: { objects }, lastSavedAt: new Date() },
+      { new: true }
+    )
+    if (!result) {
+      console.warn(`writeState: session ${docName} not found, snapshot not saved`)
+      return
+    }
     console.log(`Saved snapshot for session ${docName} (${objects.length} objects)`)
   },
 })
@@ -79,6 +84,14 @@ wss.on('connection', async (ws: WebSocket, req: http.IncomingMessage) => {
     return
   }
   const sessionId = match[1]
+
+  // Reject connections for sessions that don't exist in MongoDB
+  const sessionExists = await Session.exists({ _id: sessionId })
+  if (!sessionExists) {
+    console.warn(`WS rejected: session ${sessionId} not found in DB`)
+    ws.close(1008, 'Session not found')
+    return
+  }
 
   if (!activeSessions.has(sessionId)) {
     activeSessions.set(sessionId, { peers: new Set(), ydoc: null })
