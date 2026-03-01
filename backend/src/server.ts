@@ -10,6 +10,7 @@ import { connectMongo } from './persistence/mongodb'
 import { redis, addUserToSession, removeUserFromSession } from './persistence/redis'
 import { Session } from './models/Session'
 import sessionRoutes from './routes/sessions'
+import authRoutes from './routes/auth'
 import { activeSessions } from './state'
 
 const app = express()
@@ -22,6 +23,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
+app.use('/auth', authRoutes)
 app.use('/sessions', sessionRoutes)
 
 // --- y-websocket persistence ---
