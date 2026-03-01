@@ -4,11 +4,12 @@ import * as Y from 'yjs'
 
 interface CanvasProps {
   doc: Y.Doc
-  mode: 'draw' | 'text'
+  mode: 'draw' | 'text' | 'erase'
+  color: string
   onCursorMove?: (pos: { x: number; y: number } | null) => void
 }
 
-export function Canvas({ doc, mode, onCursorMove }: CanvasProps) {
+export function Canvas({ doc, mode, color, onCursorMove }: CanvasProps) {
   const canvasElRef = useRef<HTMLCanvasElement>(null)
   const fabricRef = useRef<fabric.Canvas | null>(null)
   // Guard to prevent echo: local fabric changes → Y.Map → back to fabric
@@ -43,11 +44,11 @@ export function Canvas({ doc, mode, onCursorMove }: CanvasProps) {
         fc.freeDrawingBrush = new fabric.PencilBrush(fc)
       }
       fc.freeDrawingBrush.width = 3
-      fc.freeDrawingBrush.color = '#000000'
+      fc.freeDrawingBrush.color = color
     } else {
       fc.isDrawingMode = false
     }
-  }, [mode])
+  }, [mode, color])
 
   // ── Task 3.7: click-to-add IText in text mode ───────────────────────────
   useEffect(() => {
@@ -61,7 +62,7 @@ export function Canvas({ doc, mode, onCursorMove }: CanvasProps) {
         left: pointer.x,
         top: pointer.y,
         fontSize: 20,
-        fill: '#000000',
+        fill: color,
       })
       fc.add(text)
       fc.setActiveObject(text)
@@ -73,7 +74,7 @@ export function Canvas({ doc, mode, onCursorMove }: CanvasProps) {
     return () => {
       fc.off('mouse:down', onMouseDown)
     }
-  }, [mode])
+  }, [mode, color])
 
   // ── Tasks 3.4 + 3.5: yjs ↔ fabric binding with isRemoteUpdate guard ─────
   useEffect(() => {
@@ -162,6 +163,22 @@ export function Canvas({ doc, mode, onCursorMove }: CanvasProps) {
       objectsMap.unobserve(onMapChange)
     }
   }, [doc])
+
+  // ── Erase mode: click to remove an object (syncs via existing Yjs binding) ──
+  useEffect(() => {
+    const fc = fabricRef.current
+    if (!fc || mode !== 'erase') return
+
+    const onMouseDown = (e: fabric.IEvent) => {
+      const target = e.target
+      if (target) fc.remove(target)
+    }
+
+    fc.on('mouse:down', onMouseDown)
+    return () => {
+      fc.off('mouse:down', onMouseDown)
+    }
+  }, [mode])
 
   // ── Task 4.2: broadcast cursor position via awareness ───────────────────
   // Use a ref so the effect doesn't re-run when the callback identity changes

@@ -15,16 +15,16 @@ export function CanvasPage() {
   const navigate = useNavigate()
   const { auth } = useAuth()
 
-  const [mode, setMode] = useState<'draw' | 'text'>('draw')
+  const [mode, setMode] = useState<'draw' | 'text' | 'erase'>('draw')
   const [shareCode, setShareCode] = useState<string | null>(null)
   const [sessionName, setSessionName] = useState('')
   const [codeCopied, setCodeCopied] = useState(false)
 
   const username = auth?.username ?? 'anonymous'
-  const color = userColor(username)
+  const [activeColor, setActiveColor] = useState(() => userColor(username))
 
   const { doc, provider, connected } = useYjs(sessionId, username)
-  const { remoteStates, setLocalCursor } = useAwareness(provider, username, color)
+  const { remoteStates, setLocalCursor } = useAwareness(provider, username, activeColor)
 
   useEffect(() => {
     if (!auth || !sessionId) return
@@ -47,7 +47,7 @@ export function CanvasPage() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: C.black }}>
       {/* Top bar: toolbar + share code + back button */}
       <div style={{ ...hudBar, justifyContent: 'space-between' }}>
-        <Toolbar mode={mode} onModeChange={setMode} />
+        <Toolbar mode={mode} onModeChange={setMode} activeColor={activeColor} onColorChange={setActiveColor} />
         <div style={{ flex: 1 }} />
         {shareCode && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -80,12 +80,12 @@ export function CanvasPage() {
           </span>
           {sessionName && <span style={{ color: C.greenDim }}>· {sessionName}</span>}
         </div>
-        <PresenceBar localUser={{ name: username, color }} remoteStates={remoteStates} />
+        <PresenceBar localUser={{ name: username, color: activeColor }} remoteStates={remoteStates} />
       </div>
 
       {/* Canvas area */}
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-        <Canvas doc={doc} mode={mode} onCursorMove={setLocalCursor} />
+        <Canvas doc={doc} mode={mode} color={activeColor} onCursorMove={setLocalCursor} />
         <CursorLayer remoteStates={remoteStates} />
       </div>
     </div>

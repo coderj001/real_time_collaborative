@@ -138,6 +138,25 @@ export const presenceChip: CSSProperties = {
   color: C.green,
 }
 
+// Color swatch chip (inactive)
+export const swatchChip: CSSProperties = {
+  width: '16px',
+  height: '16px',
+  border: `2px solid ${C.borderDim}`,
+  cursor: 'pointer',
+  flexShrink: 0,
+}
+
+// Color swatch chip (active — bright border highlight)
+export const swatchChipActive: CSSProperties = {
+  width: '16px',
+  height: '16px',
+  border: `2px solid #ffffff`,
+  cursor: 'pointer',
+  flexShrink: 0,
+  boxShadow: '0 0 4px rgba(255,255,255,0.6)',
+}
+
 // Cursor name label
 export const cursorLabel: CSSProperties = {
   fontSize: '9px',
